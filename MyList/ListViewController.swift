@@ -9,6 +9,40 @@
 import UIKit
 
 class ListViewController: UITableViewController {
+    
+    var items = [Item]()
+    let CellIdentifier = "Cell Identifier"
+    
+    required init?(coder decoder: NSCoder) {
+        super.init(coder: decoder)
+        
+        // Load Items
+        loadItems()
+    }
+    
+    private func loadItems() {
+        if let filePath = pathForItems(), FileManager.default.fileExists(atPath: filePath) {
+            if let archivedItems = NSKeyedUnarchiver.unarchiveObject(withFile: filePath) as? [Item] {
+                items = archivedItems
+            }
+        }
+    }
+    
+    private func pathForItems() -> String? {
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        
+        if let documents = paths.first, let documentsURL = NSURL(string: documents) {
+            return documentsURL.appendingPathComponent("items", isDirectory: false)?.path
+        }
+        
+        return nil
+    }
+    
+    private func saveItems() {
+        if let filePath = pathForItems() {
+            NSKeyedArchiver.archiveRootObject(items, toFile: filePath)
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,6 +52,13 @@ class ListViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        //let item = Item()
+        //print(item.uuid)
+        title = "Items"
+        
+        tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: CellIdentifier)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: "addItem:")
+        print(items)
     }
 
     override func didReceiveMemoryWarning() {
@@ -29,23 +70,24 @@ class ListViewController: UITableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 0
+        return items.count
     }
-
-    /*
+    
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifier, for: indexPath)
 
-        // Configure the cell...
-
+        let item = items[indexPath.row]
+        cell.textLabel?.text = item.name
+        
         return cell
     }
-    */
+ 
 
     /*
     // Override to support conditional editing of the table view.

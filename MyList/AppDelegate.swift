@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        seedItems()
         return true
     }
 
@@ -40,7 +42,47 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
+    
+    private func pathForItems() -> String? {
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        
+        if let documents = paths.first, let documentsURL = NSURL(string: documents) {
+            return documentsURL.appendingPathComponent("items")?.path
+        }
+        
+        return nil
+    }
 
+    private func seedItems() {
+        let ud = UserDefaults.standard
+        
+        if ud.bool(forKey: "UserDefaultsSeedItems") {
+            if let filePath = Bundle.main.path(forResource: "seed", ofType: "plist"), let seedItems = NSArray(contentsOfFile: filePath) {
+                // Items
+                var items = [Item]()
+                
+                //Create list of items
+                for seedItem in seedItems {
+                    var testItem = seedItem as! [String: AnyObject]
+                    if let name = testItem["name"] as? String, let price = testItem["price"] as? Float{
+                        
+                        //Create Item
+                        let item = Item(name: name, price: price)
+                        items.append(item)
+                    }
+                }
+                
+                if let itemsPath = pathForItems() {
+                    // Write to File
+                    if NSKeyedArchiver.archiveRootObject(items, toFile: itemsPath) {
+                        ud.set(true, forKey: "UserDefaultsSeedItems")
+                    }
+            }
+        }
+        
+    }
+        
+    }
 
 }
 
