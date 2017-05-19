@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ListViewController: UITableViewController {
+class ListViewController: UITableViewController, AddItemViewControllerDelegate {
     
     var items = [Item]()
     let CellIdentifier = "Cell Identifier"
@@ -43,6 +43,21 @@ class ListViewController: UITableViewController {
             NSKeyedArchiver.archiveRootObject(items, toFile: filePath)
         }
     }
+    
+    //Mark: -
+    //Mark: Add Item view Controller Delegate Methods
+    func controller(controller: AddItemViewController, didSaveWithName name: String, andPrice price: Float) {
+        //create item
+        let item = Item(name: name, price: price)
+        
+        //Add item to Items
+        items.append(item)
+        
+        //Add row to table view
+        tableView.insertRows(at: [IndexPath(row: (items.count - 1), section: 0)], with: .none)
+        
+        saveItems()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,7 +72,7 @@ class ListViewController: UITableViewController {
         title = "Items"
         
         tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: CellIdentifier)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: "addItem:")
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(self.addItem))
         print(items)
     }
 
@@ -87,7 +102,21 @@ class ListViewController: UITableViewController {
         
         return cell
     }
+    
+    func addItem(sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "AddItemViewController", sender: self)
+    }
  
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+        
+        if segue.identifier == "AddItemViewController" {
+            if let navigationController = segue.destination as? UINavigationController, let addItemViewController = navigationController.viewControllers.first as? AddItemViewController {
+                addItemViewController.delegate = self
+            }
+        }
+    }
 
     /*
     // Override to support conditional editing of the table view.

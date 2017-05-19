@@ -56,7 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func seedItems() {
         let ud = UserDefaults.standard
         
-        if ud.bool(forKey: "UserDefaultsSeedItems") {
+        if !ud.bool(forKey: "UserDefaultsSeedItems") {
             if let filePath = Bundle.main.path(forResource: "seed", ofType: "plist"), let seedItems = NSArray(contentsOfFile: filePath) {
                 // Items
                 var items = [Item]()
